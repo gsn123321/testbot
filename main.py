@@ -1,6 +1,9 @@
 import telebot
 import os
 from dotenv import load_dotenv
+import random
+import string
+from telebot import types
 
 load_dotenv()
 
@@ -15,9 +18,45 @@ if not TOKEN:
 bot = telebot.TeleBot(TOKEN)
 
 
-@bot.message_handler(commands=['start', 'help'])
-def welcome_message(message):
-    bot.reply_to(message, 'Привіт, я простий ехо-бот')
+@bot.message_handler(commands=['start'])
+def start(message):
+    sms = bot.send_message(message.chat.id, "Введите число:")
+    bot.register_next_step_handler(sms, password)
+
+def password(message):
+    if not message.text.isdigit():
+        sms = bot.send_message(message.chat.id, "Это не число, еще раз: ")
+        bot.register_next_step_handler(sms, password)
+    else:
+        length = int(message.text)
+        symbols = string.ascii_letters + string.digits + string.punctuation
+        password = ''.join(random.choice(symbols) for _ in range(length))
+        bot.reply_to(message, password)
+
+@bot.message_handler(commands=['play'])
+def start(message):
+    sms = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    button = types.KeyboardButton("Камінь")
+    button2 = types.KeyboardButton("Ножиці")
+    button3 = types.KeyboardButton("Бумага")
+
+    sms.add(button, button2, button3)
+
+    bot.send_message(message.chat.id, "Выбери вариант:", reply_markup=sms)
+
+@bot.message_handler(func=lambda message: True)    
+def game(message):
+    options = ['Камінь', 'Ножиці', 'Бумага']
+    comp = random.choice(options)
+    if message.text == comp:
+        bot.send_message(message.chat.id, f"{message.text} | {comp} Нічия")
+    elif message.text == 'Камінь' and comp == 'Ножиці' or message.text == "Ножиці" and comp == "Бумага" or message.text == "Бумага" and comp == "Камінь":
+        bot.send_message(message.chat.id, f"{message.text} | {comp} Ви виграли")
+    else:
+        bot.send_message(message.chat.id, f"{message.text} | {comp} Ви програли")
+
+
 
 @bot.message_handler(commands=['info'])
 def info_handler(message):
@@ -32,9 +71,10 @@ def info_handler(message):
     bot.send_message(chat_id, f'Привіт, {first_name}')
 
 
-@bot.message_handler(func=lambda message: message.text.startswith('hello'))
-def hello_handler(message):
-    bot.reply_to(message, 'Привіт!')
+@bot.message_handler(func=lambda message: message.text.endswith('?'))
+def answer_handler(message):
+    answer = ['Да', 'Ні']
+    bot.reply_to(message, random.choice(answer))
 
 
 
