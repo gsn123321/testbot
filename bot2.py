@@ -26,6 +26,7 @@ bot.add_custom_filter(custom_filter=custom_filters.StateFilter(bot))
 
 class RegistrationStates(StatesGroup):
     waiting_for_email = State()
+    waiting_for_phone = State()
 
 reg_kb = types.ReplyKeyboardMarkup()
 reg_btn = types.KeyboardButton('Реєстрація')
@@ -64,9 +65,15 @@ def start_reg(message):
         message.chat.id,
         )
 
+    bot.set_state(
+        message.from_user.id,
+        RegistrationStates.waiting_for_phone,
+        message.chat.id,
+        )
+    
     bot.send_message(
         message.chat.id,
-        "Чудово! Надішли мені адресу електроної пошти, на яку хочеш отримувати спам!",
+        "Чудово! Надішли мені адресу електроної пошти або нмоер телефону, на яку хочеш отримувати спам!",
         reply_markup=cansel_kb
     )
 
@@ -94,7 +101,30 @@ def process_email(message):
             'Не схоже на Email',
         )
 
+@bot.message_handler(state=RegistrationStates.waiting_for_phone)
+def process_phone(message):
+    phone = message.text
+    pattern = r'^\+380\d{9}$'
 
+    if re.match(pattern, phone):
+        print(f'New phone: {phone}')
+
+        with open('emails.txt', '+a') as file:
+            file.write(phone + '\n')
+
+        bot.delete_state(message.from_user.id, message.chat.id)
+
+        bot.send_message(
+            message.chat.id,
+            'Дякую',
+            reply_markup=reg_kb,
+        )
+    else: 
+        bot.send_message(
+            message.chat.id,
+            'Не схоже на телефон',
+        )
+    
 
 @bot.callback_query_handler(func=lambda call: call.data == 'cansel')
 def cansel_handler(call):
