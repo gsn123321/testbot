@@ -43,7 +43,7 @@ def start(message):
 
     sms.add(button, button2, button3)
 
-    bot.send_message(message.chat.id, "Выбери вариант:", reply_markup=sms)
+    bot.send_message(message.chat.id, "Выберите вариант:", reply_markup=sms)
 
 @bot.message_handler(func=lambda message: True)    
 def game(message):
