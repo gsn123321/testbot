@@ -15,7 +15,7 @@ load_dotenv()
 TOKEN = os.getenv('TOKEN')
 
 if not TOKEN:
-    print('Tokrn not found')
+    print('Token not found')
     exit()
 
 state_storage = StateMemoryStorage()
