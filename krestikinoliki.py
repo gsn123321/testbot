@@ -24,7 +24,6 @@ bot = telebot.TeleBot(TOKEN, state_storage=state_storage)
 
 bot.add_custom_filter(custom_filter=custom_filters.StateFilter(bot))
 
-# игровое поле
 board = ['  ', '  ', '  ',
          '  ', '  ', '  ',
          '  ', '  ', '  ',]
